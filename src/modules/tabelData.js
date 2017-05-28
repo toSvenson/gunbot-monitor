@@ -71,6 +71,7 @@ class TableData {
       Promise.all(allPromises)
         .then(values => {
           let totalBTCValue = 0.0;
+          let totalDiffSinceBuy = 0.0;
           let totalProfit = 0.0;
           let availableBitCoins = 0;
           let latestAvailableBitCoinsDate = new Date(0);
@@ -97,6 +98,10 @@ class TableData {
               totalBTCValue += parseFloat(formatter.btcValue(data.coins, data.lastPriceInBTC));
             }
 
+            if (!isNaN(parseFloat(formatter.currentProfit(data.coins, data.boughtPrice, data.lastPriceInBTC)))) {
+              totalDiffSinceBuy += parseFloat(formatter.currentProfit(data.coins, data.boughtPrice, data.lastPriceInBTC));
+            }
+
             if (!isNaN(parseFloat(data.profit))) {
               totalProfit += parseFloat(data.profit);
             }
@@ -109,7 +114,7 @@ class TableData {
               formatter.openOrders(data.openOrders || data.noOpenOrders),
               formatter.coins(data.coins),
               formatter.btcValue(data.coins, data.lastPriceInBTC),
-              formatter.currentProfit(data.coins, data.boughtPrice, data.lastPriceInBTC),
+              formatter.currentProfitWithPercent(data.coins, data.boughtPrice, data.lastPriceInBTC),
               formatter.price(data.buyPrice),
               formatter.price(data.sellPrice),
               formatter.lastPrice(data.lastPrice, data.tendency),
@@ -119,19 +124,20 @@ class TableData {
               formatter.tradesInTimeSlots(data.buys),
               formatter.trades(data.sellCounter, data.lastTimeStampSell),
               formatter.tradesInTimeSlots(data.sells),
-              formatter.price(data.profit),
-              formatter.errorCode(data.lastErrorCode, data.lastErrorTimeStamp)
+              formatter.profit(data.profit),
+              formatter.errorCode(data.errors, data.lastTimeStamp)
             ]);
           }
 
           table.push([
-            formatter.tradePair('TOTAL'),
+            chalk.bold(formatter.tradePair('TOTAL')),
             '',
             '',
             '',
             '',
             '',
-            formatter.price(totalBTCValue),
+            chalk.bold(formatter.price(totalBTCValue)),
+            chalk.bold(formatter.totalCurrentProfit(totalBTCValue, totalDiffSinceBuy)),
             '',
             '',
             '',
@@ -141,8 +147,7 @@ class TableData {
             '',
             '',
             '',
-            '',
-            formatter.price(totalProfit),
+            chalk.bold(formatter.profit(totalProfit)),
             ''
           ]);
           result.table = table;
